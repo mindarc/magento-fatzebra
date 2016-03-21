@@ -32,11 +32,6 @@
             </fatzebra>
         </helpers>
         <blocks>
-            <adminhtml>
-                <rewrite>
-                    <sales_order_grid>MindArc_FatZebra_Block_Adminhtml_Sales_Order_Grid</sales_order_grid>
-                </rewrite>
-            </adminhtml>
             <fatzebra>
                 <class>MindArc_FatZebra_Block</class>
             </fatzebra>
@@ -122,7 +117,26 @@
         </layout>
     </frontend>
     <adminhtml>
-    
+        <events>
+            <core_block_abstract_prepare_layout_after>
+                <observers>
+                    <fatzebra_grid_column>
+                        <type>model</type>
+                        <class>MindArc_FatZebra_Model_Observer</class>
+                        <method>addActionColumn</method> 
+                    </fatzebra_grid_column>
+                </observers>
+            </core_block_abstract_prepare_layout_after>
+            <sales_order_grid_collection_load_before>
+                <observers>
+                    <fatzebra_order_prepare_collection>
+                        <type>model</type>
+                        <class>MindArc_FatZebra_Model_Observer</class>
+                        <method>prepareOrderGridCollection</method> 
+                    </fatzebra_order_prepare_collection>
+                </observers>
+            </sales_order_grid_collection_load_before>
+        </events>    
         <layout>
             <updates>
                 <fatzebra>
