@@ -2,19 +2,58 @@
 <div id="payment_form_<?php echo $_code ?>" style="display:none;">
 <input type="hidden" name="<?php echo $_code ?>_cc_type" />
 <?php
-    $fraud_detection = (boolean) Mage::getStoreConfig('payment/fatzebra/fraud_detected', Mage::app()->getStore());
-    $direct_post = (boolean) Mage::getStoreConfig('payment/fatzebra/direct_post', Mage::app()->getStore());
+    $fraud_detection = (boolean) Mage::getStoreConfig('payment/fatzebra/fraud_detected');
+    $direct_post = (boolean) Mage::getStoreConfig('payment/fatzebra/direct_post');
 ?>
 <?php if ($fraud_detection): ?>
-    <input name="payment[io_bb]" id="fatzebra_io_bb" type="hidden" />
+    
+<script src="https://mpsnare.iesnare.com/snare.js" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+
+    var io_install_flash = false;
+    var io_bbout_element_id = 'io_bb';
+    var io_enable_rip = true;
+    var io_install_stm = false;
+    var io_exclude_stm = 12; 
+    var fatzebra_last = "";
+    var fatzebra_url_session = "<?php echo Mage::getUrl('fatzebra/index/index',array('_forced_secure'=>true)); ?>";
+    var fatzebra = setInterval(function() {
+        checkDeivceId()
+    }, 1000);
+    function checkDeivceId() {
+        if (jQuery('#io_bb').length > 0)
+        {
+            var value = $(io_bbout_element_id).value;
+            if (value !== "" && fatzebra_last === value) {
+                clearInterval(fatzebra);
+                var request = new Ajax.Request(
+                        fatzebra_url_session, {method: 'post', parameters: Form.serialize("fatzbra_request")}
+                );
+            }
+            else{
+                fatzebra_last = value;
+            }
+        } else {
+
+        }
+    }
+
+//]]>
+</script>
+<from id="fatzbra_request"  name="fatzbra_request" method="post" >
+    <input name="io_bb" id="io_bb"  type="hidden"  />
+</from>
+	
+	
 <?php endif; ?>
 <?php if ($direct_post): ?>
     <?php
         $nonce = uniqid("fzdirect-");
-        $shared_secret = Mage::getStoreConfig('payment/fatzebra/shared_secret', Mage::app()->getStore());
+        $shared_secret = Mage::getStoreConfig('payment/fatzebra/shared_secret');
         $verification = hash_hmac('md5', $nonce, $shared_secret);
-        $fz_mode = Mage::getStoreConfig('payment/fatzebra/sandbox', Mage::app()->getStore());
-        $fz_username = Mage::getStoreConfig('payment/fatzebra/username', Mage::app()->getStore());
+        $fz_mode = Mage::getStoreConfig('payment/fatzebra/sandbox');
+        $fz_username = Mage::getStoreConfig('payment/fatzebra/username');
 
         $fz_url = $fz_mode ? 'https://gateway.sandbox.fatzebra.com.au/v2/credit_cards/direct/' . $fz_username : 'https://gateway.fatzebra.com.au/v2/credit_cards/direct/' . $fz_username;
     ?>
@@ -30,7 +69,7 @@
                 <li id="<?php echo $_code ?>_cc_type_cvv_div">
                     <label for="<?php echo $_code ?>_cc_token"><?php echo $this->__('Use Saved Card?') ?></label>
                     <div class="input-box">
-                        <div class="v-fix">
+                        <div style="float: left;" >
                             <input name="use_saved_card" onChange="$('payment_form_<?php echo $_code ?>_entry').toggle();" type="checkbox" title="<?php echo $this->__('Use Saved Card') ?>" class="input-radio" id="<?php echo $_code ?>_cc_token" value="1" checked />
                         </div>
                         <div id="<?php echo $_code ?>_saved_card_details">
@@ -47,7 +86,7 @@
         <?php endif; ?>
 </ul>   
 <ul class="form-list" id="payment_form_<?php echo $_code ?>_entry" <?php if($this->canSave()&&$this->hasCustomerToken())echo 'style="display: none;"' ?>  >
-    <?php if((boolean)Mage::getStoreConfig('payment/fatzebra/show_logo', Mage::app()->getStore())): ?>
+    <?php if((boolean)Mage::getStoreConfig('payment/fatzebra/show_logo')): ?>
         <a href="https://www.fatzebra.com.au/?rel=logo" title="Fat Zebra Certified" style="float: right;"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . "/payments/Fat-Zebra-Certified-small.png"; ?>" alt="Fat Zebra Certified" border="0" /></a>
     <?php endif; ?>
     <li>
@@ -68,7 +107,7 @@
     </li>
     <li>
         <div class="input-box">
-            <label for="<?php echo $_code ?>_expiration"><?php echo Mage::helper('payment')->__('Expiration Date') ?> <span class="required">*</span></label><br/>
+            <label style="display: block; width: 100%;" for="<?php echo $_code ?>_expiration"><?php echo Mage::helper('payment')->__('Expiration Date') ?> <span class="required">*</span></label><br/>
             <select id="<?php echo $_code ?>_expiration" style="width:140px;" name="payment[cc_exp_month]" class="required-entry">
             <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
             <?php foreach ($this->getCcMonths() as $k=>$v): ?>
@@ -86,8 +125,9 @@
     <?php if($this->hasVerification()): ?>
     <li>
         <div class="input-box">
-            <label for="<?php echo $_code ?>_cc_cid"><?php echo Mage::helper('payment')->__('Card Verification Number') ?> <span class="required">*</span></label><br/>
+            <label style="display: block; width: 100%;" for="<?php echo $_code ?>_cc_cid"><?php echo Mage::helper('payment')->__('Card Verification Number') ?> <span class="required">*</span></label><br/>
             <input type="text" title="<?php echo Mage::helper('payment')->__('Card Verification Number') ?>" class="required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" style="width:3em;" value="<?php echo $this->getInfoData('cc_cid')?>"/>
+            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
         </div>
     </li>
     <?php endif; ?>
@@ -99,9 +139,9 @@
                     <?php echo $this->__($saveText) ?>
                 </label>
                 <div class="input-box">
-                    <div class="v-fix">
-                        <input type="checkbox" title="<?php echo $this->__($saveText) ?>" class="input-radio" id="<?php echo $_code ?>_cc_save"   name="payment[cc_save]" value="1" />
-                    </div>
+                   
+                        <input type="checkbox" checked title="<?php echo $this->__($saveText) ?>" class="input-radio" id="<?php echo $_code ?>_cc_save"   name="payment[cc_save]" value="1" />
+                  
                    <?php $saveDescriptionText = ($this->hasCustomerToken()?'Replace existing credit card for later use.':'Remember this credit card for later use.') ?>
                     <a href="#" class="save-is-this-secure"><?php echo $this->__($saveDescriptionText) ?></a>
                 </div>
@@ -124,3 +164,9 @@
 	</style>
 </ul>
 </div>
+<script type="text/javascript">
+    jQuery(document).click(function()
+    {
+        jQuery("#payment-tool-tip").hide();
+    });
+</script>
